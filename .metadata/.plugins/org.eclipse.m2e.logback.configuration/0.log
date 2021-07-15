@@ -3184,3 +3184,6 @@
 2021-07-15 13:26:46,573 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
 2021-07-15 13:26:46,573 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
 2021-07-15 13:26:46,573 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\rocio.gonzalez\Documents\Albo\Albo\src\test\resources
+2021-07-15 14:17:14,222 [main] INFO  o.e.m2e.actions.ExecutePomAction - Creating new launch configuration
+2021-07-15 14:17:21,487 [Worker-62: Launching Albo] INFO  o.e.m.i.launch.MavenLaunchDelegate - C:\Users\rocio.gonzalez\Documents\Albo\Albo
+2021-07-15 14:17:21,487 [Worker-62: Launching Albo] INFO  o.e.m.i.launch.MavenLaunchDelegate -  mvn -Ppom.xml -B install

@@ -9,7 +9,6 @@ INDEX VERSION 1.131+C:\Users\rocio.gonzalez\Documents\Albo\.metadata\.plugins\or
 3074664897.index
 2728436904.index
 3832389910.index
-3072338057.index
 2249219182.index
 2695777595.index
 782131218.index

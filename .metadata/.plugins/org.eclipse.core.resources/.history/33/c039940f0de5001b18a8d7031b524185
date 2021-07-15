@@ -1,0 +1,5 @@
+package com.albo.marvel.response;
+
+public class MarvelResponse {
+
+}

@@ -1,0 +1,119 @@
+package com.albo.marvel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+
+import us.monoid.web.Resty;
+
+import org.apache.commons.codec.digest.DigestUtils;  
+
+@RestController
+@RequestMapping("/marvel")
+public class MarvelController {
+	
+	private static final String template="Hello, %s!";
+	
+	private final AtomicLong counter= new AtomicLong();
+	
+	@GetMapping("/colaborators/{character}")
+	public Marvel marvel(@PathVariable String character) {
+		
+		 String publicKey = "fdfae0b8c2d8e97e0a305894eeefd644";
+	        String privateKey = "108a9cc6fa965b59fe17e8332df71b20e76c65ba";
+	        long timeStamp = System.currentTimeMillis();
+	        int limit = 5;
+	        
+	        String result= null;
+	        
+	        String url=null;
+
+	        String stringToHash = timeStamp + privateKey + publicKey;
+	        String hash = DigestUtils.md5Hex(stringToHash);
+	        
+	        System.out.println(hash);
+	        
+	        if(character.equals("ironman"))
+	        {
+	        	url = String.format("https://gateway.marvel.com:443/v1/public/characters/1009368?ts=%d&apikey=%s&hash=%s&limit=%d", timeStamp, publicKey, hash, limit);
+	        }
+	        else {
+	        	if(character.equals("capamerica"))
+	        	{
+	        		url = String.format("https://gateway.marvel.com:443/v1/public/characters/1009220?ts=%d&apikey=%s&hash=%s&limit=%d", timeStamp, publicKey, hash, limit);
+	        	}
+	        }
+	        
+	        System.out.println(url);
+	    	
+	        try { 
+	            URL urlt = new URL(url);
+	            
+	            
+	            try {
+	              URLConnection connection = urlt.openConnection();
+	              InputStream inputStream = connection.getInputStream();
+	              System.out.println(inputStream);
+	              
+	              String output = new Resty().text(url).toString();
+	              System.out.println(output);
+	              result=output;
+	              
+	              ObjectMapper objectMapper = new ObjectMapper();
+	              
+	              //Character c = objectMapper.readValue(output, Character.class);
+	              
+	  	        //Character data = new Gson().fromJson(output, Character.class);
+	              
+	              Character employee = objectMapper.readValue(output, new TypeReference<Character>(){});
+
+		        // Show it.
+		        System.out.println(c);
+		        
+		        
+		        
+
+		        
+		        
+	            } catch (IOException ioEx) {
+	              System.out.println(ioEx);
+	            }
+	          } catch (MalformedURLException malEx) {
+	            System.out.println(malEx);
+	          }
+		
+	        
+//	        https://gateway.marvel.com:443/v1/public/characters/1009368?ts=1626222888914&apikey=fdfae0b8c2d8e97e0a305894eeefd644&hash=1af60f4d3c1ea2ab96addbe68fd6ffa6&limit=5
+//	        
+//			"id": 1009368,
+//			"name": "Iron Man",
+//			
+//
+//			"id": 1009220,
+//			"name": "Captain America",
+//			"description": "Vowing to serve his country any way he could, young Steve Rogers took the super soldier serum to become America's one-man army. Fighting for the red, white and blue for over 60 years, Captain America is the living, breathing symbol of freedom and liberty.",
+//			"modified": "2020-04-04T19:01:59-0400",
+//			"thumbnail": {
+//		
+			
+
+	        
+	        
+		return new Marvel(counter.incrementAndGet(), String.format(template, result));
+	}
+	
+
+}

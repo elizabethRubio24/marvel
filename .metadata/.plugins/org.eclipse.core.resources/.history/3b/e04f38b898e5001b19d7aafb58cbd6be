@@ -1,0 +1,226 @@
+package com.albo.marvel;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.albo.marvel.constants.MarvelConstants;
+import com.albo.marvel.model.CharacterComic;
+import com.albo.marvel.model.CharacterDto;
+import com.albo.marvel.model.Event;
+import com.albo.marvel.model.EventDto;
+import com.albo.marvel.model.Item;
+import com.albo.marvel.model.ItemCreator;
+import com.albo.marvel.model.RelatedCharacterDto;
+import com.albo.marvel.model.ResultRelatedCharacter;
+import com.albo.marvel.response.MarvelResponseColaborator;
+import com.albo.marvel.response.MarvelResponseCharacter;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+import us.monoid.json.JSONException;
+
+import us.monoid.web.Resty;
+
+import org.apache.commons.codec.digest.DigestUtils;  
+
+@RestController
+@RequestMapping("/marvel")
+public class MarvelController {
+	
+	private static final String template="Hello, %s!";
+	
+	private final AtomicLong counter= new AtomicLong();
+	
+	@GetMapping("/colaborators/{character}")
+	public Marvel marvelColaborators(@PathVariable String character) throws JSONException, IOException {
+		MarvelResponseColaborator response = new MarvelResponseColaborator();
+		List<String> writers  =new ArrayList<String>();
+		List<String> editors  =new ArrayList<String>();
+		List<String> colorists  =new ArrayList<String>();
+		String lastSync=null;
+		
+		 String publicKey = "fdfae0b8c2d8e97e0a305894eeefd644";
+	        String privateKey = "108a9cc6fa965b59fe17e8332df71b20e76c65ba";
+	        long timeStamp = System.currentTimeMillis();
+	        int limit = 5;
+	        
+	        String result= null;
+	
+	        String id=null;
+
+	        String stringToHash = timeStamp + privateKey + publicKey;
+	        String hash = DigestUtils.md5Hex(stringToHash);
+	        
+	        if(character.equals(MarvelConstants.IRONMAN)){
+	        	id=MarvelConstants.ID_IRONMAN;
+	        }
+	        else {
+	        	if(character.equals(MarvelConstants.CAPAMERICA)){
+	        		id=MarvelConstants.ID_CAPAMERICA;
+	        	}
+	        }
+	        String url = String.format("https://gateway.marvel.com:443/v1/public/characters/" + id +"?ts=%d&apikey=%s&hash=%s&limit=%d", timeStamp, publicKey, hash, limit);
+	    	
+	        try { 
+	              
+	              String output = new Resty().text(url).toString();
+	              System.out.println(output);	              
+	              result=output;             
+	              ObjectMapper objectMapper = new ObjectMapper();
+	              objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	              CharacterDto characterDto = objectMapper.readValue(output, CharacterDto.class);	  
+	              
+	              //Events
+	              
+	              List<Item> events=characterDto.getData().getResults().get(0).getEvents().getItems();
+	              List<ItemCreator> creators=null; 
+          
+	              for(Item item : events) {
+	            	  System.out.println(item.getResourceURI());	            	  
+	            	  String urlEvent = String.format(item.getResourceURI() +"?ts=%d&apikey=%s&hash=%s&limit=%d", timeStamp, publicKey, hash, limit);
+	            	  String outputEvent= new Resty().text(urlEvent).toString();
+		              ObjectMapper objectMapperEvent = new ObjectMapper();
+		              objectMapperEvent.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		              EventDto eventDto = objectMapperEvent.readValue(outputEvent, EventDto.class);	
+		              System.out.println(eventDto);
+		              creators=eventDto.getData().getResults().get(0).getCreators().getItems();	   
+		              lastSync=eventDto.getData().getResults().get(0).getModified();
+	              }
+	              
+	              for(ItemCreator creator : creators) {
+	            	  if(creator.getRole().equals("writer")) {
+	            		  writers.add(creator.getName());
+	            	  }
+	               	  if(creator.getRole().equals("colorist")) {
+	            		  colorists.add(creator.getName());
+	            	  }
+	               	  if(creator.getRole().equals("editor")) {
+	            		  editors.add(creator.getName());
+	            	  }
+	              }
+	            	  
+	              response.setLast_sync(lastSync);
+	              response.setWriters(writers);
+	              response.setEditors(editors);
+	              response.setColorists(colorists);
+		        
+	          } catch (MalformedURLException malEx) {
+	            System.out.println(malEx);
+	          }
+		
+	        
+//	        https://gateway.marvel.com:443/v1/public/characters/1009368?ts=1626222888914&apikey=fdfae0b8c2d8e97e0a305894eeefd644&hash=1af60f4d3c1ea2ab96addbe68fd6ffa6&limit=5
+//	        
+//			"id": 1009368,
+//			"name": "Iron Man",
+//			
+//
+//			"id": 1009220,
+//			"name": "Captain America",
+//			"description": "Vowing to serve his country any way he could, young Steve Rogers took the super soldier serum to become America's one-man army. Fighting for the red, white and blue for over 60 years, Captain America is the living, breathing symbol of freedom and liberty.",
+//			"modified": "2020-04-04T19:01:59-0400",
+//			"thumbnail": {
+//		
+	        ObjectMapper mapper = new ObjectMapper();
+	        String json = mapper.writeValueAsString(response);
+	        
+	        
+		return new Marvel( json);
+	}
+	
+	
+	@GetMapping("/characters/{character}")
+	public String marvelCharacteres(@PathVariable String character) throws JSONException, IOException {		
+		MarvelResponseCharacter responseCharacter = new MarvelResponseCharacter();
+		
+		
+//		List<String> relatedCharacterList  =new ArrayList<String>();
+		
+		List<CharacterComic> relatedCharacterList  =new ArrayList<CharacterComic>();
+		
+		String lastSync=null;
+	
+		String publicKey = "fdfae0b8c2d8e97e0a305894eeefd644";
+	    String privateKey = "108a9cc6fa965b59fe17e8332df71b20e76c65ba";
+	    long timeStamp = System.currentTimeMillis();
+	    int limit = 5;
+	        
+	    String result= null;
+	
+	    String id=null;
+
+	        String stringToHash = timeStamp + privateKey + publicKey;
+	        String hash = DigestUtils.md5Hex(stringToHash);
+	        
+	        if(character.equals(MarvelConstants.IRONMAN)){
+	        	id=MarvelConstants.ID_IRONMAN;
+	        }
+	        else {
+	        	if(character.equals(MarvelConstants.CAPAMERICA)){
+	        		id=MarvelConstants.ID_CAPAMERICA;
+	        	}
+	        }
+	        String url = String.format("https://gateway.marvel.com/v1/public/characters/" + id +"/series?ts=%d&apikey=%s&hash=%s&limit=%d", timeStamp, publicKey, hash, limit);
+	    	   try { 
+	              System.out.println(url);
+	              String output = new Resty().text(url).toString();
+	              System.out.println(output);	              
+	              result=output;             
+	              ObjectMapper objectMapper = new ObjectMapper();
+	              objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	              
+	              RelatedCharacterDto relatedCharacterDto = objectMapper.readValue(output, RelatedCharacterDto.class);	  
+	              System.out.println(relatedCharacterDto);
+	              
+	              List<Item> charac = new ArrayList<Item>();
+	              List<Item> comic = new ArrayList<Item>();
+	              
+	              
+	              //Characters 
+	              
+	              List<ResultRelatedCharacter> lstResultRelatedCharacter=relatedCharacterDto.getData().getResults();
+	              
+	              for(ResultRelatedCharacter resultRelatedCharacter : lstResultRelatedCharacter ) {	            	  
+	            	 //charac.addAll( relatedCharacter.getCharacters().getItems());
+	            	 //comic.addAll(relatedCharacter.getComics().getItems());	      
+	            	  CharacterComic characterComic = new CharacterComic();	
+	            	  for(Item item : resultRelatedCharacter.getCharacters().getItems()) {	            		 
+	            		 List <String> comics = new ArrayList<String>();	            		 
+	            		             		 
+	            		 characterComic.setCharacter(item.getName());
+	            		 for(Item itemComic : resultRelatedCharacter.getCharacters().getItems() ) {
+	            			 comics.add(itemComic.getName());            			 
+	            		 }
+	            		 characterComic.setComic(comics);
+	            	 }  
+	            	 relatedCharacterList.add(characterComic); 
+	            	 
+	              }
+	              responseCharacter.setLstCharacterComic(relatedCharacterList);
+	              System.out.println(charac);
+		        
+	          } catch (MalformedURLException malEx) {
+	            System.out.println(malEx);
+	          }
+	    	   ObjectMapper mapper = new ObjectMapper();
+	        String json = mapper.writeValueAsString(responseCharacter);
+	        
+	        
+	
+		return  json;
+	}
+	
+
+}

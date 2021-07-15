@@ -1,0 +1,33 @@
+package com.albo.marvel.response;
+
+import java.util.List;
+
+public class MarvelResponseCharacter {
+	private String last_sync;
+
+	private String character;
+	private List<String> comic;
+	
+	public String getLast_sync() {
+		return last_sync;
+	}
+	public void setLast_sync(String last_sync) {
+		this.last_sync = last_sync;
+	}
+	public String getCharacter() {
+		return character;
+	}
+	public void setCharacter(String character) {
+		this.character = character;
+	}
+	public List<String> getComic() {
+		return comic;
+	}
+	public void setComic(List<String> comic) {
+		this.comic = comic;
+	}
+	
+	
+
+
+}

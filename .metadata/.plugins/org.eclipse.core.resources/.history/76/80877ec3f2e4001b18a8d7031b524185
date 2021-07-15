@@ -1,0 +1,26 @@
+package com.albo.marvel.model;
+
+public class Thumbnail {
+	
+	private String path3;
+	private String extension;
+	
+
+	
+	
+	public String getPath3() {
+		return path3;
+	}
+	public void setPath3(String path3) {
+		this.path3 = path3;
+	}
+	public String getExtension() {
+		return extension;
+	}
+	public void setExtension(String extension) {
+		this.extension = extension;
+	}
+	
+	
+
+}

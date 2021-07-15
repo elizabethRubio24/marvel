@@ -1,0 +1,26 @@
+package com.albo.marvel.model;
+
+import java.io.Serializable;
+import java.util.List;
+
+public class ResultEvent implements Serializable{
+	
+	private static final long serialVersionUID = -1661446814206726694L;
+	
+	private Integer id;
+	private String title;
+	private String description;
+	private String resourceURI;
+	private List<Url> urls;
+	private String modified;
+	private String start;
+	private String end;
+	private Thumbnail thumbnail;
+	private Creator creators;
+	private Story stories;
+	private Comic comics;
+	private Serie series;
+	private Next next;
+	private Previous previous;
+
+}

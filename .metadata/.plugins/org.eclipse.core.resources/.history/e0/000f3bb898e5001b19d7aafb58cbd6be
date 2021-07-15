@@ -1,0 +1,13 @@
+package com.albo.marvel.constants;
+
+public class MarvelConstants {
+	
+	public static final String IRONMAN= "ironman";
+	
+	public static final String CAPAMERICA= "capamerica"; 
+	
+	public static final String ID_IRONMAN= "1009368"; 
+	
+	public static final String ID_CAPAMERICA= "1009220"; 
+
+}

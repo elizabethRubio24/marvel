@@ -1,0 +1,5 @@
+package com.albo.marvel.model;
+
+public class Comic {
+
+}
